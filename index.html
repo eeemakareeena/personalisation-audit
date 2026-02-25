@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personalisation Audit — Powered by Claude</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0f0f0f;
+      --paper: #f5f0e8;
+      --cream: #ede8dc;
+      --accent: #c8401a;
+      --accent-light: #f0e0d8;
+      --muted: #7a7060;
+      --border: #d4cfc4;
+      --card: #fff9f2;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      padding: 52px 0 40px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 56px;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .logo-area h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-area h1 em { font-style: italic; color: var(--accent); }
+
+    .logo-area p {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .badge {
+      background: var(--ink);
+      color: var(--paper);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      padding: 6px 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .form-section { margin-bottom: 48px; }
+
+    .field-label {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .input-row {
+      display: flex;
+      border: 1.5px solid var(--ink);
+      background: var(--card);
+      transition: box-shadow 0.2s;
+    }
+
+    .input-row:focus-within { box-shadow: 4px 4px 0 var(--ink); }
+
+    .input-row input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 16px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--ink);
+    }
+
+    .input-row input::placeholder { color: var(--muted); }
+
+    .divider-or {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 20px 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .divider-or::before, .divider-or::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    textarea {
+      width: 100%;
+      border: 1.5px solid var(--ink);
+      background: var(--card);
+      outline: none;
+      padding: 16px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--ink);
+      resize: vertical;
+      min-height: 130px;
+      line-height: 1.6;
+      transition: box-shadow 0.2s;
+    }
+
+    textarea:focus { box-shadow: 4px 4px 0 var(--ink); }
+    textarea::placeholder { color: var(--muted); }
+
+    .industry-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .industry-btn {
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      padding: 7px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+
+    .industry-btn:hover { border-color: var(--ink); color: var(--ink); }
+    .industry-btn.active {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .spacer { margin-top: 24px; }
+
+    .submit-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1.5px solid var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+      padding: 16px 32px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 28px;
+      transition: all 0.15s;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: translate(-2px, -2px);
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .submit-btn .arrow { font-size: 1.1rem; transition: transform 0.2s; }
+    .submit-btn:hover:not(:disabled) .arrow { transform: translateX(4px); }
+
+    .loading-bar {
+      display: none;
+      margin-top: 32px;
+      padding: 20px 24px;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+    }
+
+    .loading-bar.visible { display: flex; align-items: center; gap: 16px; }
+
+    .loading-dots { display: flex; gap: 5px; }
+
+    .loading-dots span {
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: dot-pulse 1.4s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dot-pulse {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .loading-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    #results { display: none; animation: fadeUp 0.5s ease forwards; }
+    #results.visible { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .results-header h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.6rem;
+      letter-spacing: -0.02em;
+    }
+
+    .results-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: right;
+    }
+
+    .audit-section {
+      margin-bottom: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      overflow: hidden;
+    }
+
+    .audit-section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 22px;
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-icon {
+      width: 32px; height: 32px;
+      border: 1.5px solid var(--ink);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .audit-section-body { padding: 20px 22px; }
+
+    .audit-item {
+      display: flex;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.6;
+    }
+
+    .audit-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .item-bullet {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 9px;
+    }
+
+    .item-text { font-size: 0.9rem; }
+    .item-text strong { font-weight: 500; display: block; margin-bottom: 2px; }
+
+    .item-tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      margin-top: 4px;
+    }
+
+    .tag-high { background: #fde8e0; color: var(--accent); }
+    .tag-medium { background: #fef3d0; color: #a06a00; }
+    .tag-low { background: #e8f0e8; color: #3a6a3a; }
+
+    .score-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 28px;
+      background: var(--ink);
+      color: var(--paper);
+      margin-bottom: 24px;
+    }
+
+    .score-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .score-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.8rem;
+      line-height: 1;
+    }
+
+    .score-desc {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      max-width: 300px;
+      line-height: 1.5;
+    }
+
+    .reset-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      padding: 10px 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-top: 32px;
+      transition: all 0.15s;
+    }
+
+    .reset-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+    .error-box {
+      display: none;
+      border: 1.5px solid var(--accent);
+      background: var(--accent-light);
+      padding: 16px 20px;
+      margin-top: 20px;
+      font-size: 0.88rem;
+      color: var(--accent);
+    }
+
+    .error-box.visible { display: block; }
+
+    footer {
+      margin-top: 80px;
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    footer p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    @media (max-width: 600px) {
+      .header-inner { flex-direction: column; align-items: flex-start; }
+      .score-banner { flex-direction: column; gap: 12px; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="logo-area">
+        <h1>Personalisation<br/><em>Audit Tool</em></h1>
+        <p>Powered by Claude · Identify what's missing in your customer experience</p>
+      </div>
+      <div class="badge">Claude AI</div>
+    </div>
+  </header>
+
+  <div class="form-section" id="formSection">
+    <label class="field-label">Website URL (optional)</label>
+    <div class="input-row">
+      <input type="url" id="urlInput" placeholder="https://yourwebsite.com" />
+    </div>
+
+    <div class="divider-or">or describe your customer journey</div>
+
+    <label class="field-label">Customer journey / context</label>
+    <textarea id="journeyInput" placeholder="e.g. We're a B2B SaaS company targeting mid-market finance teams. Our funnel goes: paid search → landing page → free trial signup → onboarding emails → paid conversion. We're seeing high drop-off after the trial signup step..."></textarea>
+
+    <div class="spacer">
+      <label class="field-label">Industry vertical</label>
+      <div class="industry-grid">
+        <button class="industry-btn" onclick="selectIndustry(this, 'Financial Services')">Financial Services</button>
+        <button class="industry-btn" onclick="selectIndustry(this, 'E-commerce / Retail')">E-commerce / Retail</button>
+        <button class="industry-btn" onclick="selectIndustry(this, 'SaaS / Technology')">SaaS / Technology</button>
+        <button class="industry-btn" onclick="selectIndustry(this, 'Travel & Hospitality')">Travel & Hospitality</button>
+        <button class="industry-btn" onclick="selectIndustry(this, 'Healthcare')">Healthcare</button>
+        <button class="industry-btn" onclick="selectIndustry(this, 'Media & Publishing')">Media & Publishing</button>
+        <button class="industry-btn" onclick="selectIndustry(this, 'Other')">Other</button>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="runAudit()">
+      Run Personalisation Audit <span class="arrow">→</span>
+    </button>
+
+    <div class="loading-bar" id="loadingBar">
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+      <span class="loading-text" id="loadingText">Analysing customer journey...</span>
+    </div>
+
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <div id="results">
+    <div class="results-header">
+      <h2>Audit Report</h2>
+      <div class="results-meta" id="resultsMeta"></div>
+    </div>
+    <div id="resultsBody"></div>
+    <button class="reset-btn" onclick="resetForm()">← Run another audit</button>
+  </div>
+
+  <footer>
+    <p>Built with Claude API · Personalisation Audit Tool v1.0</p>
+    <p>elizaveta-makarina.vercel.app</p>
+  </footer>
+</div>
+
+<script>
+  let selectedIndustry = '';
+
+  function selectIndustry(btn, industry) {
+    document.querySelectorAll('.industry-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedIndustry = industry;
+  }
+
+  const loadingMessages = [
+    'Analysing customer journey...',
+    'Identifying segmentation opportunities...',
+    'Evaluating funnel drop-off points...',
+    'Generating A/B test recommendations...',
+    'Compiling personalisation roadmap...'
+  ];
+
+  let loadingInterval;
+
+  function startLoadingCycle() {
+    let i = 0;
+    const el = document.getElementById('loadingText');
+    el.textContent = loadingMessages[0];
+    loadingInterval = setInterval(() => {
+      i = (i + 1) % loadingMessages.length;
+      el.textContent = loadingMessages[i];
+    }, 2200);
+  }
+
+  function stopLoadingCycle() { clearInterval(loadingInterval); }
+
+  async function runAudit() {
+    const url = document.getElementById('urlInput').value.trim();
+    const journey = document.getElementById('journeyInput').value.trim();
+    const errorBox = document.getElementById('errorBox');
+    errorBox.classList.remove('visible');
+
+    if (!url && !journey) {
+      errorBox.textContent = 'Please enter a website URL or describe your customer journey.';
+      errorBox.classList.add('visible');
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    const loadingBar = document.getElementById('loadingBar');
+    btn.disabled = true;
+    loadingBar.classList.add('visible');
+    startLoadingCycle();
+
+    const context = [
+      url ? `Website URL: ${url}` : '',
+      journey ? `Customer journey description: ${journey}` : '',
+      selectedIndustry ? `Industry: ${selectedIndustry}` : ''
+    ].filter(Boolean).join('\n');
+
+    try {
+      // Calls our secure backend — API key never exposed to the browser
+      const response = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Request failed');
+      }
+
+      const audit = await response.json();
+      stopLoadingCycle();
+      loadingBar.classList.remove('visible');
+      btn.disabled = false;
+      renderResults(audit, url || 'Custom Journey');
+
+    } catch (err) {
+      stopLoadingCycle();
+      loadingBar.classList.remove('visible');
+      btn.disabled = false;
+      errorBox.textContent = 'Something went wrong. Please try again.';
+      errorBox.classList.add('visible');
+      console.error(err);
+    }
+  }
+
+  function renderResults(audit, source) {
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('resultsMeta').innerHTML =
+      `${source}<br>${new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })}`;
+
+    const scoreAccent = audit.overallScore >= 7 ? '#a8d8a8' : audit.overallScore >= 4 ? '#f5c842' : '#f5a080';
+
+    document.getElementById('resultsBody').innerHTML = `
+      <div class="score-banner">
+        <div>
+          <div class="score-label">Overall Personalisation Score</div>
+          <div class="score-value" style="color:${scoreAccent}">${audit.overallScore}<span style="font-size:1.4rem;opacity:0.5">/10</span></div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;opacity:0.7;margin-top:4px">${audit.scoreLabel}</div>
+        </div>
+        <div class="score-desc">${audit.scoreSummary}</div>
+      </div>
+      ${audit.sections.map(section => `
+        <div class="audit-section">
+          <div class="audit-section-header">
+            <div class="section-icon">${section.icon}</div>
+            <div class="section-title">${section.title}</div>
+          </div>
+          <div class="audit-section-body">
+            ${section.items.map(item => `
+              <div class="audit-item">
+                <div class="item-bullet"></div>
+                <div class="item-text">
+                  <strong>${item.title}</strong>
+                  ${item.detail}
+                  <br><span class="item-tag tag-${item.priority.toLowerCase()}">${item.priority} Priority</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    `;
+
+    const results = document.getElementById('results');
+    results.classList.add('visible');
+    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function resetForm() {
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('formSection').style.display = 'block';
+    document.getElementById('urlInput').value = '';
+    document.getElementById('journeyInput').value = '';
+    document.getElementById('errorBox').classList.remove('visible');
+    document.querySelectorAll('.industry-btn').forEach(b => b.classList.remove('active'));
+    selectedIndustry = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
