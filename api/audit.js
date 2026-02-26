@@ -1,4 +1,9 @@
 module.exports = async function (req, res){
+  var key = process.env.GROQ_API_KEY;
+  if(!key){
+    res.status(500).json({error:"GROQ_API_KEY is not set"});
+    return;
+  }
 if(req.method !== "POST"){
   res.status(405).json({error:"Method not allowed"});
   return;
