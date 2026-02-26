@@ -14,7 +14,7 @@ try{
     method: "POST",
     headers:{
       "Content-Type": "application/json",
-      "Authorization":"Bearer" + ProcessingInstruction.enc.GROQ_API_KEY
+      "Authorization":"Bearer" + process.env.GROQ_API_KEY
     },
     body: JSON.stringify({
       model:"llama3-70b-8192",
