@@ -26,7 +26,7 @@ module.exports = async function (req, res) {
         "Authorization": "Bearer " + key
       },
       body: JSON.stringify({
-        model: "llama3-70b-8192",
+        model: "llama-3.3-70b-versatile",
         max_tokens: 2000,
         temperature: 0.3,
         messages: [
